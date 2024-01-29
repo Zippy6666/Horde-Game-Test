@@ -1,0 +1,4 @@
+>> BRUH <<
+- Custom huds
+- Restrictions (no noclip for example, game ends when you die)
+- Teleport and visibility system from proxspawn

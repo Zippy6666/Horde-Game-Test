@@ -12,7 +12,8 @@ if !Z_HORDEGAME then
     Z_HORDEGAME.NextPrintNPCsLeft = CurTime()
 end
 
---------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 function Z_HORDEGAME:NPC_Good_Position( npc, pos )
 
     local vectorExtra = Vector(0, 0, -npc:OBBMins().z)
@@ -28,48 +29,164 @@ function Z_HORDEGAME:NPC_Good_Position( npc, pos )
     return pos + vectorExtra
 
 end
---------------------------------------------------------------------------------------------------------------------------------------=#
-function Z_HORDEGAME:TryPositionNPC( npc, noTeleportFromEffect )
 
-    table.Shuffle(self.NodePositions)
 
-    local playerPos = table.Random(player.GetAll()):GetPos()
-    local useSpawnPoints = !table.IsEmpty(ZHORDE_SPAWN_POINTS)
-    local positions = useSpawnPoints && ZHORDE_SPAWN_POINTS or self.NodePositions
-    for _, v in ipairs(positions) do
-        local checkPos = self:NPC_Good_Position(npc, useSpawnPoints && v:GetPos()+Vector(0, 0, 25) or v)
+-- OLD
+-- function Z_HORDEGAME:TryPositionNPC( npc, noTeleportFromEffect )
 
-        if !useSpawnPoints then
-            if self:TooCloseToPlayer(checkPos) then return end
-            if checkPos:DistToSqr(playerPos) > GetConVar("zippyhorde_spawndist"):GetInt()^2 then continue end
+--     table.Shuffle(self.NodePositions)
+
+--     local playerPos = table.Random(player.GetAll()):GetPos()
+--     local useSpawnPoints = !table.IsEmpty(ZHORDE_SPAWN_POINTS)
+--     local positions = (useSpawnPoints && ZHORDE_SPAWN_POINTS) or self.NodePositions
+
+
+--     for _, v in ipairs(positions) do
+--         local checkPos = self:NPC_Good_Position(npc, useSpawnPoints && v:GetPos()+Vector(0, 0, 25) or v)
+
+--         if !useSpawnPoints then
+--             if self:TooCloseToPlayer(checkPos) then return end
+--             if checkPos:DistToSqr(playerPos) > GetConVar("zippyhorde_spawndist"):GetInt()^2 then continue end
+--         end
+
+--         local trData = {
+--             start = checkPos,
+--             endpos = checkPos,
+--             filter = npc,
+--         }
+
+--         if util.TraceEntity(trData, npc).Hit then continue end
+
+--         -- Goofy effects:
+--         if GetConVar("zippyhorde_teleport_fx"):GetBool() then
+
+--             if !noTeleportFromEffect then
+--                 ParticleEffect("aurora_shockwave", npc:GetPos(), Angle())
+--                 sound.Play("beams/beamstart5.wav", npc:GetPos(), 90, math.random(90, 110), 0.5)
+--             end
+            
+--             ParticleEffect("aurora_shockwave", checkPos, Angle())
+--             sound.Play("beams/beamstart5.wav", checkPos, 90, math.random(90, 110), 0.5)
+
+--         end
+
+--         npc:SetPos(checkPos)    return true
+--     end
+
+-- end
+
+
+function Z_HORDEGAME:CheckVisibility( pos )
+    
+    for _, ply in ipairs(player.GetAll()) do
+        
+        if ply:PosInView(pos) then
+            return true
         end
 
-        local trData = {
-            start = checkPos,
-            endpos = checkPos,
-            filter = npc,
-        }
-        
-        if util.TraceEntity(trData, npc).Hit then continue end
+    end
 
-        -- Goofy effects:
+
+    return false
+
+end
+
+
+
+local TracerStartUpAmt = 150 
+local TracerEndPosDownVec = Vector(0, 0, 500)
+function Z_HORDEGAME:FindPlyRelPos( ply )
+
+    local VecMin = GetConVar("zippyhorde_spawndist"):GetInt()
+    local VecMax = GetConVar("zippyhorde_spawndist_min"):GetInt()
+    local PlyPos = ply:WorldSpaceCenter()
+    local xMult = table.Random({-1, 1})
+    local yMult = table.Random({-1, 1})
+    local TrStartPos = PlyPos + Vector( math.random(VecMin, VecMax)*xMult, math.random(VecMin, VecMax)*yMult, TracerStartUpAmt )
+
+
+    debugoverlay.Line(PlyPos, TrStartPos, 3)
+
+    
+
+    if !util.IsInWorld(TrStartPos) then return end -- Position not in world
+
+
+
+    -- Down trace
+    local tr = util.TraceLine({
+        start=TrStartPos,
+        endpos = TrStartPos-TracerEndPosDownVec,
+        mask = MASK_NPCWORLDSTATIC,
+    })
+    if !tr.Hit then return end -- Must hit floor to spawn NPC
+
+
+    debugoverlay.Line(TrStartPos, TrStartPos-TracerEndPosDownVec, 3)
+
+
+    local ReturnPos = tr.HitPos+tr.HitNormal*15
+    if self:CheckVisibility(ReturnPos) then return end -- A player can see this position right now
+
+
+    -- All checks satisfied, return the position
+    return ReturnPos
+
+end
+
+
+function Z_HORDEGAME:TryPositionNPC( npc, noTeleportFromEffect )
+
+
+    local ply = table.Random(player.GetAll())
+    local useSpawnPoints = !table.IsEmpty(ZHORDE_SPAWN_POINTS)
+    local function effect( pos )
         if GetConVar("zippyhorde_teleport_fx"):GetBool() then
 
             if !noTeleportFromEffect then
                 ParticleEffect("aurora_shockwave", npc:GetPos(), Angle())
                 sound.Play("beams/beamstart5.wav", npc:GetPos(), 90, math.random(90, 110), 0.5)
             end
-            
-            ParticleEffect("aurora_shockwave", checkPos, Angle())
-            sound.Play("beams/beamstart5.wav", checkPos, 90, math.random(90, 110), 0.5)
+
+            ParticleEffect("aurora_shockwave", pos, Angle())
+            sound.Play("beams/beamstart5.wav", pos, 90, math.random(90, 110), 0.5)
 
         end
+    end
 
-        npc:SetPos(checkPos)    return true
+
+    if useSpawnPoints then
+        -- Spawn point spawning
+        for _, v in ipairs(ZHORDE_SPAWN_POINTS) do
+            local checkPos = self:NPC_Good_Position(npc, v:GetPos()+Vector(0, 0, 25))
+
+            local trData = {
+                start = checkPos,
+                endpos = checkPos,
+                filter = npc,
+            }
+
+            if util.TraceEntity(trData, npc).Hit then continue end
+
+            effect( checkPos )
+
+            npc:SetPos(checkPos)    return true
+        end
+    else
+
+        -- Relative spawning
+        local pos = self:FindPlyRelPos(ply)
+        if pos then
+            npc:SetPos(pos)
+            effect( pos )
+            return true
+        end
+
     end
 
 end
---------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 function Z_HORDEGAME:TooCloseToPlayer( pos )
 
     for _, ply in ipairs(player.GetAll()) do
@@ -78,11 +195,13 @@ function Z_HORDEGAME:TooCloseToPlayer( pos )
     end
 
 end
---------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 function Z_HORDEGAME:GetBasedOnStrength( number )
     return math.floor( number*self.NPCStrength + number*self.NPCStrengthIncreaseAmount*self.WavesDone )
 end
---------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 function Z_HORDEGAME:GetAliveNPCsCount( spawnmenuClass )
 
     local count = 0
@@ -94,7 +213,8 @@ function Z_HORDEGAME:GetAliveNPCsCount( spawnmenuClass )
     return count
 
 end
---------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 function Z_HORDEGAME:DecideNPC()
 
     local npcPool = {}
@@ -141,7 +261,8 @@ function Z_HORDEGAME:DecideNPC()
     return npcData.spawnmenuData, spawnmenuClass, npcData.CustomWeapons
 
 end
---------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 function Z_HORDEGAME:SpawnNPC()
 
     -- Create NPC --
@@ -217,16 +338,34 @@ function Z_HORDEGAME:SpawnNPC()
 
     -- New Health Based on Strenght --
     timer.Simple(0.1, function()
+
         if !IsValid(NPC) then return end
+
         local newHealth = self:GetBasedOnStrength( NPC:GetMaxHealth() )
         NPC:SetMaxHealth(newHealth)
         NPC:SetHealth(newHealth)
+
     end)
     --------------------------------------------------------------------------------------------=#
 
     NPC.ZippyHorde_NotPositionedYet = !self:TryPositionNPC(NPC, true) -- Position it, or let us know if it failed
+
+
+    -- AUTO TELEPORT SYSTEM (FROM PROXSPAWN)
+    -- Try moving to another location if it has been out of view for some time
+    NPC:ConvTimer( "ProxyMove", math.Rand(15, 25), function()
+        if GetConVar("zippyhorde_teleport"):GetBool() && !self:CheckVisibility( NPC:GetPos() ) then
+            local success = self:TryPositionNPC( NPC )
+
+            if success && NPC:IsNPC() && NPC:IsGoalActive() then -- Clear goal after teleportation so we don't just run off
+                NPC:ClearGoal()
+            end
+        end
+    end, 0 )
+
 end
---------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 function Z_HORDEGAME:SpawnWave_Announce()
 
     local printStuff = {
@@ -243,12 +382,13 @@ function Z_HORDEGAME:SpawnWave_Announce()
         PrintMessage(HUD_PRINTTALK, text)
     end
 
-    if table.IsEmpty(self.NodePositions) && table.IsEmpty(ZHORDE_SPAWN_POINTS) then
-        PrintMessage(HUD_PRINTTALK, "WARNING: No nodegraph detected! Try setting \"ai_norebuildgraph\" to \"1\" and restart the map, or use spawn points!")
-    end
+    -- if table.IsEmpty(self.NodePositions) && table.IsEmpty(ZHORDE_SPAWN_POINTS) then
+    --     PrintMessage(HUD_PRINTTALK, "WARNING: No nodegraph detected! Try setting \"ai_norebuildgraph\" to \"1\" and restart the map, or use spawn points!")
+    -- end
 
 end
---------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 function Z_HORDEGAME:StartExtraSpawnTimer( count )
 
     local extraNPCsSpawned = 0
@@ -265,7 +405,8 @@ function Z_HORDEGAME:StartExtraSpawnTimer( count )
     end)
 
 end
---------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 function Z_HORDEGAME:SpawnWave()
 
     self.WaveActive = true
@@ -280,7 +421,8 @@ function Z_HORDEGAME:SpawnWave()
         if timer.RepsLeft("ZippyHordeSpawnRestTimer") == 0 && extraNPCCount > 0 then self:StartExtraSpawnTimer(extraNPCCount) end
     end)
 end
---------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 function Z_HORDEGAME:RefillHealth()
 
     if !GetConVar("zippyhorde_refill_health"):GetBool() then return end
@@ -293,7 +435,8 @@ function Z_HORDEGAME:RefillHealth()
     PrintMessage(HUD_PRINTTALK, "Health and armor refilled!")
 
 end
---------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 function Z_HORDEGAME:StartWave()
 
     self.WaveNPCsKilled = 0
@@ -305,7 +448,8 @@ function Z_HORDEGAME:StartWave()
     timer.Create("ZippyHordeWaitTimer", startTime, 1, function() self:SpawnWave() end)
 
 end
---------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 function Z_HORDEGAME:WaveOver()
 
     self.WaveActive = false
@@ -327,7 +471,8 @@ function Z_HORDEGAME:WaveOver()
     self:RefillHealth()
 
 end
---------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 function Z_HORDEGAME:RegisterDead( ent )
 
     if !ent.IsZippyHordeNPC then return end
@@ -355,7 +500,8 @@ function Z_HORDEGAME:RegisterDead( ent )
     if npcsLeft < 1 then self:WaveOver() end
 
 end
---------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 function Z_HORDEGAME:RemoveAllLiveNPCs()
 
     for _, ent in ipairs(ents.GetAll()) do
@@ -367,7 +513,8 @@ function Z_HORDEGAME:RemoveAllLiveNPCs()
     end
 
 end
---------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 net.Receive("ZippyHordeGame_Start", function( _, ply )
 
     if !ply:IsSuperAdmin() then return end
@@ -392,7 +539,8 @@ net.Receive("ZippyHordeGame_Start", function( _, ply )
     net.Broadcast()
 
 end)
---------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 net.Receive("ZippyHordeGame_ForceEnd", function( _, ply )
 
     if !ply:IsSuperAdmin() then return end
@@ -411,7 +559,8 @@ net.Receive("ZippyHordeGame_ForceEnd", function( _, ply )
     PrintMessage(HUD_PRINTCENTER, "HORDE GAME ENDED")
 
 end)
---------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 net.Receive("ZippyHordeGame_ForceEndWave", function( _, ply )
 
     if !ply:IsSuperAdmin() then return end
@@ -424,27 +573,71 @@ net.Receive("ZippyHordeGame_ForceEndWave", function( _, ply )
     Z_HORDEGAME:WaveOver()
 
 end)
---------------------------------------------------------------------------------------------------------------------------------------=#
-hook.Add("EntityTakeDamage", "EntityTakeDamage_ZippyHorde", function( _, dmginfo )
+
+
+hook.Add("EntityTakeDamage", "EntityTakeDamage_ZippyHorde", function( ent, dmginfo )
 
     local attacker = dmginfo:GetAttacker()
     local inflictor = dmginfo:GetInflictor()
 
     if attacker.IsZippyHordeNPC or inflictor.IsZippyHordeNPC or (IsValid(inflictor) && inflictor:GetOwner().IsZippyHordeNPC) then
+
+        if attacker.ZippyHorde_NotPositionedYet then
+            -- Not positioned, cannot deal damage
+            return true
+        end
+
         local newDamage = Z_HORDEGAME:GetBasedOnStrength(dmginfo:GetDamage())
         dmginfo:SetDamage(newDamage)
+
+    end
+
+
+    if ent.ZippyHorde_NotPositionedYet then
+        -- Not positioned, cannot be hurt
+        return true
     end
 
 end)
---------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 hook.Add("OnNPCKilled", "OnNPCKilled_ZippyHorde", function( npc )
     Z_HORDEGAME:RegisterDead(npc)
 end)
---------------------------------------------------------------------------------------------------------------------------------------=#
-hook.Add("InitPostEntity", "ZippyHorde_InitPostEntity", function()
-    Z_HORDEGAME.NodePositions = ZIPPYHORDEGAME_GET_NODE_POSITIONS()
+
+
+
+hook.Add("PlayerNoClip", "ZippyHordeNoNoclip", function( ply, desiredState )
+    if Z_HORDEGAME.Started && GetConVar("zippyhorde_no_noclip"):GetBool() then
+        return false
+    end
 end)
---------------------------------------------------------------------------------------------------------------------------------------=#
+
+
+hook.Add("PlayerDeath", "ZippyHordeEnd", function()
+
+    if !Z_HORDEGAME.Started then return end
+    if !GetConVar("zippyhorde_end_on_death"):GetBool() then return end
+    if timer.Exists("ZippyHordeWaitTimer") then timer.Remove("ZippyHordeWaitTimer") end
+    if timer.Exists("ZippyHordeSpawnRestTimer") then timer.Remove("ZippyHordeSpawnRestTimer") end
+
+    Z_HORDEGAME:RemoveAllLiveNPCs()
+
+    Z_HORDEGAME.Started = false
+
+    net.Start("ZippyHordeGame_EnableButton")
+    net.Broadcast()
+
+    PrintMessage(HUD_PRINTCENTER, "GAME OVER")
+
+end)
+
+
+-- hook.Add("InitPostEntity", "ZippyHorde_InitPostEntity", function()
+--     Z_HORDEGAME.NodePositions = ZIPPYHORDEGAME_GET_NODE_POSITIONS()
+-- end)
+
+
 local function decideTeleportNPC( NPC )
 
     -- Position if still on its default (0;0;0) coordinates:
@@ -469,7 +662,8 @@ local function decideTeleportNPC( NPC )
     end
 
 end
---------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 timer.Create("ZippyHorde_TeleportNPCs", 1, 0, function()
 
     if !Z_HORDEGAME.Started then return end
@@ -479,4 +673,4 @@ timer.Create("ZippyHorde_TeleportNPCs", 1, 0, function()
     end
 
 end)
---------------------------------------------------------------------------------------------------------------------------------------=#
+

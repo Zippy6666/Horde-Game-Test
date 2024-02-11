@@ -284,7 +284,7 @@ hook.Add("PopulateToolMenu", "PopulateToolMenu_HordeGameTest", function() spawnm
     panel:Help("\nNPC Count:")
 
     HORDE_PANEL.npcAmount = panel:NumSlider("Start", nil, 1, 20, 0)
-    HORDE_PANEL.npcAmount:SetValue(10)
+    HORDE_PANEL.npcAmount:SetValue(15)
     HORDE_PANEL.increasePerWave = panel:NumSlider("Increase Per Wave", nil, 1, 20, 0)
     HORDE_PANEL.increasePerWave:SetValue(5)
     ------------------------------------------------------=#
@@ -295,7 +295,7 @@ hook.Add("PopulateToolMenu", "PopulateToolMenu_HordeGameTest", function() spawnm
     HORDE_PANEL.strength = panel:NumSlider("Start Percentage", nil, 0, 2, 2)
     HORDE_PANEL.strength:SetValue(1)
     HORDE_PANEL.strengthIncrease = panel:NumSlider("Percent Added Per Wave", nil, 0, 2, 2)
-    HORDE_PANEL.strengthIncrease:SetValue(0.05)
+    HORDE_PANEL.strengthIncrease:SetValue(0)
     ------------------------------------------------------=#
 
     -- CONTROLS --
@@ -316,6 +316,8 @@ hook.Add("PopulateToolMenu", "PopulateToolMenu_HordeGameTest", function() spawnm
     panel:Help("\nSettings:")
 
     panel:CheckBox("Refill Health", "zippyhorde_refill_health")
+    panel:CheckBox("End On Death", "zippyhorde_end_on_death")
+    panel:CheckBox("No Noclip", "zippyhorde_no_noclip")
     panel:CheckBox("Teleport NPCs", "zippyhorde_teleport")
     panel:CheckBox("Teleport FX", "zippyhorde_teleport_fx")
 

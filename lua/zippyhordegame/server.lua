@@ -170,7 +170,9 @@ function Z_HORDEGAME:TryPositionNPC( npc, noTeleportFromEffect )
 
             effect( checkPos )
 
-            npc:SetPos(checkPos)    return true
+            npc:SetPos(checkPos)
+            npc:SetAngles(Angle(0, math.random(1, 360), 0))
+            return true
         end
     else
 
@@ -178,6 +180,7 @@ function Z_HORDEGAME:TryPositionNPC( npc, noTeleportFromEffect )
         local pos = self:FindPlyRelPos(ply)
         if pos then
             npc:SetPos(pos)
+            npc:SetAngles(Angle(0, math.random(1, 360), 0))
             effect( pos )
             return true
         end

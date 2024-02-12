@@ -172,7 +172,7 @@ function Z_HORDEGAME:TryPositionNPC( npc, noTeleportFromEffect )
 
             npc:SetPos(checkPos)
             npc:SetAngles(Angle(0, math.random(1, 360), 0))
-            npc:SetNoDraw(false)
+            -- npc:SetNoDraw(false)
             npc:ClearSchedule()
             return true
         end
@@ -195,7 +195,7 @@ function Z_HORDEGAME:TryPositionNPC( npc, noTeleportFromEffect )
 
                 npc:SetPos(checkPos)
                 npc:SetAngles(Angle(0, math.random(1, 360), 0))
-                npc:SetNoDraw(false)
+                -- npc:SetNoDraw(false)
                 npc:ClearSchedule()
                 return true
             
@@ -384,7 +384,7 @@ function Z_HORDEGAME:SpawnNPC()
     end, 0 )
 
 
-    NPC:SetNoDraw(true)
+    -- NPC:SetNoDraw(true)
 
 end
 

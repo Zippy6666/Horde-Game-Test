@@ -172,6 +172,8 @@ function Z_HORDEGAME:TryPositionNPC( npc, noTeleportFromEffect )
 
             npc:SetPos(checkPos)
             npc:SetAngles(Angle(0, math.random(1, 360), 0))
+            -- NPC:SetNoDraw(false)
+            NPC:ClearSchedule()
             return true
         end
     else
@@ -179,10 +181,25 @@ function Z_HORDEGAME:TryPositionNPC( npc, noTeleportFromEffect )
         -- Relative spawning
         local pos = self:FindPlyRelPos(ply)
         if pos then
-            npc:SetPos(pos)
-            npc:SetAngles(Angle(0, math.random(1, 360), 0))
-            effect( pos )
-            return true
+            local checkPos = self:NPC_Good_Position(npc, pos+Vector(0, 0, 25))
+
+            local trData = {
+                start = checkPos,
+                endpos = checkPos,
+                filter = npc,
+            }
+
+            if !util.TraceEntity(trData, npc).Hit then
+
+                effect( checkPos )
+
+                npc:SetPos(checkPos)
+                npc:SetAngles(Angle(0, math.random(1, 360), 0))
+                -- NPC:SetNoDraw(false)
+                NPC:ClearSchedule()
+                return true
+            
+            end
         end
 
     end
@@ -365,6 +382,9 @@ function Z_HORDEGAME:SpawnNPC()
             end
         end
     end, 0 )
+
+
+    -- NPC:SetNoDraw(true)
 
 end
 
@@ -649,30 +669,43 @@ local function decideTeleportNPC( NPC )
         return
     end
 
-    if !GetConVar("zippyhorde_teleport"):GetBool() then return end
-    if !table.IsEmpty(ZHORDE_SPAWN_POINTS) then return end -- Don't teleport if there are spawn points
+    -- if !GetConVar("zippyhorde_teleport"):GetBool() then return end
+    -- if !table.IsEmpty(ZHORDE_SPAWN_POINTS) then return end -- Don't teleport if there are spawn points
 
-    -- Teleport if too far away:
-    local allPlayersTooFarAway = true
+    -- -- Teleport if too far away:
+    -- local allPlayersTooFarAway = true
 
-    for _, ply in ipairs(player.GetAll()) do
-        local distance = NPC:GetPos():DistToSqr(ply:GetPos())
-        if distance < GetConVar("zippyhorde_spawndist"):GetInt()^2 then allPlayersTooFarAway = false break end
-    end
+    -- for _, ply in ipairs(player.GetAll()) do
+    --     local distance = NPC:GetPos():DistToSqr(ply:GetPos())
+    --     if distance < GetConVar("zippyhorde_spawndist"):GetInt()^2 then allPlayersTooFarAway = false break end
+    -- end
 
-    if allPlayersTooFarAway then
-        Z_HORDEGAME:TryPositionNPC(NPC)
-    end
+    -- if allPlayersTooFarAway then
+    --     Z_HORDEGAME:TryPositionNPC(NPC)
+    -- end
 
 end
 
 
-timer.Create("ZippyHorde_TeleportNPCs", 1, 0, function()
+timer.Create("ZippyHorde_Thinker", 1, 0, function()
 
     if !Z_HORDEGAME.Started then return end
 
     for _, NPC in ipairs(Z_HORDEGAME.NPCs) do
+
+        -- Teleport
         decideTeleportNPC( NPC )
+        
+        -- Freeze AI if it hasn't been positioned yet
+        if NPC.ZippyHorde_NotPositionedYet && NPC:IsNPC() && !NPC:IsCurrentSchedule(SCHED_NPC_FREEZE) then
+            NPC:TaskComplete()
+            NPC:ClearGoal()
+            NPC:ClearSchedule()
+            NPC:StopMoving()
+            NPC:SetMoveVelocity(Vector())
+            NPC:SetSchedule(SCHED_NPC_FREEZE)
+        end
+
     end
 
 end)

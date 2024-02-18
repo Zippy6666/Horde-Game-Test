@@ -451,8 +451,8 @@ function Z_HORDEGAME:RefillHealth()
     if !GetConVar("zippyhorde_refill_health"):GetBool() then return end
 
     for _, ply in ipairs(player.GetAll()) do
-        ply:SetHealth(100)
-        ply:SetArmor(100)
+        ply:SetHealth(ply:GetMaxHealth())
+        ply:SetArmor(ply:GetMaxArmor())
     end
 
     PrintMessage(HUD_PRINTTALK, "Health and armor refilled!")

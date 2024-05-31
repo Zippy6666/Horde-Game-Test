@@ -1,1 +1,1 @@
-Horde Mode for Gmod Sandbox
+Horde Mode for Gmod Sandbox. Made by Zippy.

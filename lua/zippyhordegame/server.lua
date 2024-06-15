@@ -287,76 +287,30 @@ function Z_HORDEGAME:SpawnNPC()
 
     -- Create NPC --
     local npcSpawnmenuData, spawnmenuClass, customWeapons = self:DecideNPC()
-    local NPC = ents.Create(npcSpawnmenuData.Class)
+    local wep = table.Random(customWeapons)
+    local NPC = ents.CreateSpawnMenuNPC( SpawnMenuClass, pos, wep or nil )
 
-    if !IsValid(NPC) then
-        PrintMessage(HUD_PRINTTALK, "WARNING: Failed to spawn \""..npcSpawnmenuData.Name.."\"!")
-    end
-    --------------------------------------------------------------------------------------------=#
-
-    -- Register NPC --
+    -- Vars
     NPC.IsZippyHordeNPC = true
+    NPC.ZippyHordeSpawnMenuClass = spawnmenuClass
+    NPC.ZippyHorde_PositionOffset = npcSpawnmenuData.Offset
 
+
+    -- Register
     NPC:CallOnRemove("hordeRegisterDeadOnRemove", function()
         self:RegisterDead(NPC)
     end)
-
     table.insert(Z_HORDEGAME.NPCs, NPC)
 
-    if !self.WaveNPCsSpawnedCount[spawnmenuClass] then self.WaveNPCsSpawnedCount[spawnmenuClass] = 0 end
+
+    -- Count
+    if !self.WaveNPCsSpawnedCount[spawnmenuClass] then
+        self.WaveNPCsSpawnedCount[spawnmenuClass] = 0
+    end
     self.WaveNPCsSpawnedCount[spawnmenuClass] = self.WaveNPCsSpawnedCount[spawnmenuClass] + 1
 
-    NPC.ZippyHordeSpawnMenuClass = spawnmenuClass
-    --------------------------------------------------------------------------------------------=#
 
-    NPC:SetAngles( Angle(0, math.Rand(0, 360), 0) ) -- Random Angle
-
-    -- NPC Spawn Menu Stuff --
-    if npcSpawnmenuData.Model then
-        local dontDoubleSetModel = {
-            npc_crabsynth = true,
-            npc_ministrider_ep1 = true,
-            npc_ministrider_ep2_trailer = true,
-            npc_ministrider_spb = true,
-        }
-    
-        NPC:SetModel(npcSpawnmenuData.Model)
-        timer.Simple(0, function() if IsValid(NPC) && !dontDoubleSetModel[npcSpawnmenuData.Class] then NPC:SetModel(npcSpawnmenuData.Model) end end)
-    end
-
-    local weps = customWeapons or npcSpawnmenuData.Weapons
-    if weps then
-        local wep = table.Random(weps)
-        if istable(wep) then
-            wep = wep.Class
-        end
-        if wep then
-            NPC:Give(wep)
-        end
-    end
-
-
-    if npcSpawnmenuData.Skin then NPC:SetSkin(npcSpawnmenuData.Skin) end
-    if npcSpawnmenuData.Health then NPC:SetMaxHealth(npcSpawnmenuData.Health) NPC:SetHealth(npcSpawnmenuData.Health) end
-    if npcSpawnmenuData.Material then NPC:SetMaterial(npcSpawnmenuData.Material) end
-    if npcSpawnmenuData.SpawnFlags then NPC:SetKeyValue("spawnflags", npcSpawnmenuData.SpawnFlags) end
-
-
-    if npcSpawnmenuData.KeyValues then
-        for key, value in pairs(npcSpawnmenuData.KeyValues) do
-            NPC:SetKeyValue(key, value)
-        end
-    end
-    
-    NPC.ZippyHorde_PositionOffset = npcSpawnmenuData.Offset
-    --------------------------------------------------------------------------------------------=#
-
-    -- Spawn and Activate --
-    NPC:Spawn()
-    NPC:Activate()
-    --------------------------------------------------------------------------------------------=#
-
-    -- New Health Based on Strenght --
+    -- New Health Based on Strenght
     timer.Simple(0.1, function()
 
         if !IsValid(NPC) then return end
@@ -366,9 +320,10 @@ function Z_HORDEGAME:SpawnNPC()
         NPC:SetHealth(newHealth)
 
     end)
-    --------------------------------------------------------------------------------------------=#
 
-    NPC.ZippyHorde_NotPositionedYet = !self:TryPositionNPC(NPC, true) -- Position it, or let us know if it failed
+
+    -- Position it, or let us know if it failed
+    NPC.ZippyHorde_NotPositionedYet = !self:TryPositionNPC(NPC, true) 
 
 
     -- AUTO TELEPORT SYSTEM (FROM PROXSPAWN)
@@ -382,10 +337,6 @@ function Z_HORDEGAME:SpawnNPC()
             end
         end
     end, 0 )
-
-
-    -- NPC:SetNoDraw(true)
-
 end
 
 

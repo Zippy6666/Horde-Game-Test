@@ -4,7 +4,8 @@ HORDE_TRYING_TO_START = false
 local HORDE_MENU = {}
 HORDE_MENU.Spawnmenu_LastCat = 1
 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 local function startButton()
 
     if HORDE_TRYING_TO_START then return end
@@ -19,21 +20,24 @@ local function startButton()
     net.SendToServer()
 
 end
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 local function endButton()
 
     net.Start("ZippyHordeGame_ForceEnd")
     net.SendToServer()
 
 end
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 local function endWaveButton()
 
     net.Start("ZippyHordeGame_ForceEndWave")
     net.SendToServer()
 
 end
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 local function addNPCButton()
 
     HORDE_MENU:GmodSpawnmenuSelect( "NPC", function( npcClass )
@@ -46,7 +50,8 @@ local function addNPCButton()
     end, true )
 
 end
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 local function addPresetButton()
 
     local frame = vgui.Create("DFrame")
@@ -92,7 +97,8 @@ local function addPresetButton()
     entry:DockMargin(0,3,0,6)
 
 end
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 local function removePresetButton()
 
     local presetName = HORDE_MENU:GetSelectedPreset()
@@ -129,7 +135,8 @@ local function removePresetButton()
     end
 
 end
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 local function NPC_List_AddLine( npcClass, npcData )
 
     local name = npcData.spawnmenuData.Name
@@ -163,7 +170,8 @@ local function NPC_List_AddLine( npcClass, npcData )
     end
 
 end
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 local function presetBoxChooseOption( _, _, _string )
 
     net.Start("ZippyHorde_SelectPreset")
@@ -173,7 +181,8 @@ local function presetBoxChooseOption( _, _, _string )
     HORDE_MENU.LastPresetChoice = _string
 
 end
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 net.Receive("ZippyHordeGame_RefreshNPCList", function()
 
     HORDE_MENU.NPC_List:Clear()
@@ -183,7 +192,8 @@ net.Receive("ZippyHordeGame_RefreshNPCList", function()
     end
 
 end)
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 net.Receive("ZippyHorde_SendPresetsToClient", function()
 
     HORDE_MENU.PresetBox:Clear()
@@ -205,7 +215,8 @@ net.Receive("ZippyHorde_SendPresetsToClient", function()
     end
 
 end)
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 net.Receive("ZippyHordeGame_GameStartConfirmed", function()
 
     for _, Panel in pairs(HORDE_PANEL) do
@@ -215,7 +226,8 @@ net.Receive("ZippyHordeGame_GameStartConfirmed", function()
     HORDE_TRYING_TO_START = false
 
 end)
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 net.Receive("ZippyHordeGame_EnableButton", function()
 
     for _, Panel in pairs(HORDE_PANEL) do
@@ -223,7 +235,8 @@ net.Receive("ZippyHordeGame_EnableButton", function()
     end
 
 end)
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 hook.Add("PopulateToolMenu", "PopulateToolMenu_HordeGameTest", function() spawnmenu.AddToolMenuOption("Utilities", "AI", "Horde", "Horde", "", "", function(panel)
 
     if !LocalPlayer():IsSuperAdmin() then
@@ -320,6 +333,8 @@ hook.Add("PopulateToolMenu", "PopulateToolMenu_HordeGameTest", function() spawnm
     panel:CheckBox("No Noclip", "zippyhorde_no_noclip")
     panel:CheckBox("Teleport NPCs", "zippyhorde_teleport")
     panel:CheckBox("Teleport FX", "zippyhorde_teleport_fx")
+    panel:CheckBox("Use Nodes", "zippyhorde_use_nodes")
+    panel:Help("Can improve spawn placement")
 
     panel:CheckBox("Seek Out Players", "zippyhorde_chase_player")
     panel:Help("Walk towards player position even though they haven't been seen yet")
@@ -335,11 +350,13 @@ hook.Add("PopulateToolMenu", "PopulateToolMenu_HordeGameTest", function() spawnm
     ------------------------------------------------------=#
 
 end) end)
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 function HORDE_MENU:GetSelectedPreset()
     return self.PresetBox:GetSelected() or self.LastPresetChoice or "default"
 end
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 function HORDE_MENU:NPC_Edit( npcClass, npcData )
 
     local width = 200
@@ -584,7 +601,8 @@ function HORDE_MENU:NPC_Edit( npcClass, npcData )
     end
 
 end
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 function HORDE_MENU:GmodSpawnmenuSelect(_list, func, useKey)
     -- Table containing every item in the spawnmenu
     local spawnmenu_item_list = list.Get(_list)
@@ -617,8 +635,10 @@ function HORDE_MENU:GmodSpawnmenuSelect(_list, func, useKey)
             table.insert(cats, cat)
         end
     end
-    cat_box:ChooseOptionID(cats[self.Spawnmenu_LastCat] && self.Spawnmenu_LastCat)
-
+    if self.Spawnmenu_LastCat <= #cats then
+        cat_box:ChooseOptionID(self.Spawnmenu_LastCat)
+    end
+    
     -- List of spawnmenu items that can be added:
     local item_list = vgui.Create("DListView", self.GmodSpawnmenuFrame)
     item_list:Dock(FILL)
@@ -658,4 +678,4 @@ function HORDE_MENU:GmodSpawnmenuSelect(_list, func, useKey)
         update_item_list()
     end
 end
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------=#
+

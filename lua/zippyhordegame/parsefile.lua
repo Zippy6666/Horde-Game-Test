@@ -5,23 +5,28 @@ local MAX_NODES = 4096
 local SIZEOF_INT = 4
 local SIZEOF_SHORT = 2
 
----------------------------------------------------------------------------------------------------------=#
+
+
 local function toUShort(b)
 	local i = {string.byte(b,1,SIZEOF_SHORT)}
 	return i[1] +i[2] *256
 end
----------------------------------------------------------------------------------------------------------=#
+
+
 local function toInt(b)
 	local i = {string.byte(b,1,SIZEOF_INT)}
 	i = i[1] +i[2] *256 +i[3] *65536 +i[4] *16777216
 	if(i > 2147483647) then return i -4294967296 end
 	return i
 end
----------------------------------------------------------------------------------------------------------=#
+
+
 local function ReadInt(f) return toInt(f:Read(SIZEOF_INT)) end
----------------------------------------------------------------------------------------------------------=#
+
+
 local function ReadUShort(f) return toUShort(f:Read(SIZEOF_SHORT)) end
----------------------------------------------------------------------------------------------------------=#
+
+
 function HordeSilverlanParseFile(f)
 	f = file.Open(f,"rb","GAME")
 		if(!f) then return end
@@ -108,8 +113,10 @@ function HordeSilverlanParseFile(f)
 	nodegraph.lookup = lookup
 	return nodegraph
 end
----------------------------------------------------------------------------------------------------------=#
+
+
 function ZIPPYHORDEGAME_GET_NODE_POSITIONS()
+	PrintMessage(HUD_PRINTTALK, "[HORDE] Getting nodes...")
 	local nodegraph = HordeSilverlanParseFile("maps/graphs/" .. game.GetMap() .. ".ain")
 
 	if !nodegraph then
@@ -138,4 +145,4 @@ function ZIPPYHORDEGAME_GET_NODE_POSITIONS()
 
 	return node_positions
 end
----------------------------------------------------------------------------------------------------------=#
+

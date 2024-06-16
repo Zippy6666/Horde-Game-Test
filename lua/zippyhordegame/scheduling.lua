@@ -1,11 +1,13 @@
 local ENT = FindMetaTable("Entity")
 
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 function ENT:Z_HordeGame_LastTargetShouldBeSeeked()
     local t = self.Z_HordeGame_LastSeekOutTarget
     return IsValid(t) && !( t:IsPlayer() && !t:Alive() )
 end
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 function ENT:Z_HordeGame_SeekOutPotentialEnemy()
 
     if self.Z_HordeGame_NextSeekOut && self.Z_HordeGame_NextSeekOut > CurTime() then return end
@@ -29,7 +31,8 @@ function ENT:Z_HordeGame_SeekOutPotentialEnemy()
     end
 
 end
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 function ENT:Z_HordeGame_TargetChaseWalkActivity()
     if GetConVar("zippyhorde_run_chase"):GetBool() then return end
     -- Make non-vj npcs walk to the target as opposed to running towards it
@@ -37,13 +40,15 @@ function ENT:Z_HordeGame_TargetChaseWalkActivity()
         self:SetMovementActivity(ACT_WALK)
     end
 end
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 function ENT:Z_HordeGame_CanSeekOut()
     if self:IsNPC() then
         local navType = self:GetNavType()   return navType == NAV_GROUND or navType == NAV_FLY
     end
 end
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------=#
+
+
 hook.Add("Think", "Think_Z_HordeGame_Scheduling", function()
 
     if !Z_HORDEGAME.Started then return end
@@ -62,4 +67,4 @@ hook.Add("Think", "Think_Z_HordeGame_Scheduling", function()
     end
 
 end)
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------=#
+

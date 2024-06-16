@@ -40,8 +40,10 @@ local path = "zippyhordegame/"
 
 AddCSLuaFile(path.."cvars.lua")
 AddCSLuaFile(path.."client.lua")
+AddCSLuaFile(path.."particles.lua")
 
 include(path.."cvars.lua")
+include(path.."particles.lua")
 
 if SERVER then
     include(path.."parsefile.lua")

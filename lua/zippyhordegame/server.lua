@@ -31,54 +31,33 @@ function Z_HORDEGAME:NPC_Good_Position( npc, pos )
 end
 
 
--- OLD
--- function Z_HORDEGAME:TryPositionNPC( npc, noTeleportFromEffect )
+local DistMinCvar = GetConVar("zippyhorde_spawndist_min")
+local DistMaxCvar = GetConVar("zippyhorde_spawndist")
+local maxNodeIter = 10
+function Z_HORDEGAME:FindNodePos( ply )
+    table.Shuffle(self.NodePositions)
 
---     table.Shuffle(self.NodePositions)
+    local DistMin = DistMinCvar:GetInt()^2
+    local DistMax = DistMaxCvar:GetInt()^2
+    local iters = 0
+    local plyPos = ply:GetPos()
+    for _, v in ipairs(self.NodePositions) do
+        local dist = v:DistToSqr(plyPos)
+        if dist >= DistMin && dist <= DistMax then
+            return v
+        end
 
---     local playerPos = table.Random(player.GetAll()):GetPos()
---     local useSpawnPoints = !table.IsEmpty(ZHORDE_SPAWN_POINTS)
---     local positions = (useSpawnPoints && ZHORDE_SPAWN_POINTS) or self.NodePositions
-
-
---     for _, v in ipairs(positions) do
---         local checkPos = self:NPC_Good_Position(npc, useSpawnPoints && v:GetPos()+Vector(0, 0, 25) or v)
-
---         if !useSpawnPoints then
---             if self:TooCloseToPlayer(checkPos) then return end
---             if checkPos:DistToSqr(playerPos) > GetConVar("zippyhorde_spawndist"):GetInt()^2 then continue end
---         end
-
---         local trData = {
---             start = checkPos,
---             endpos = checkPos,
---             filter = npc,
---         }
-
---         if util.TraceEntity(trData, npc).Hit then continue end
-
---         -- Goofy effects:
---         if GetConVar("zippyhorde_teleport_fx"):GetBool() then
-
---             if !noTeleportFromEffect then
---                 ParticleEffect("aurora_shockwave", npc:GetPos(), Angle())
---                 sound.Play("beams/beamstart5.wav", npc:GetPos(), 90, math.random(90, 110), 0.5)
---             end
-            
---             ParticleEffect("aurora_shockwave", checkPos, Angle())
---             sound.Play("beams/beamstart5.wav", checkPos, 90, math.random(90, 110), 0.5)
-
---         end
-
---         npc:SetPos(checkPos)    return true
---     end
-
--- end
+        iters = iters + 1
+        if iters >= maxNodeIter then
+            break
+        end
+    end
+end
 
 
 function Z_HORDEGAME:CheckVisibility( pos )
     
-    for _, ply in ipairs(player.GetAll()) do
+    for _, ply in player.Iterator() do
         
         if ply:PosInView(pos) then
             return true
@@ -95,38 +74,70 @@ end
 
 local TracerStartUpAmt = 150 
 local TracerEndPosDownVec = Vector(0, 0, 500)
+local UseNodesCvar = GetConVar("zippyhorde_use_nodes")
 function Z_HORDEGAME:FindPlyRelPos( ply )
+    local DownTRStartPos
+    if UseNodesCvar:GetBool() && !(istable(self.NodePositions) && table.IsEmpty(self.NodePositions)) then
 
-    local VecMin = GetConVar("zippyhorde_spawndist"):GetInt()
-    local VecMax = GetConVar("zippyhorde_spawndist_min"):GetInt()
-    local PlyPos = ply:WorldSpaceCenter()
-    local xMult = table.Random({-1, 1})
-    local yMult = table.Random({-1, 1})
-    local TrStartPos = PlyPos + Vector( math.random(VecMin, VecMax)*xMult, math.random(VecMin, VecMax)*yMult, TracerStartUpAmt )
+        -- Use nodes
+
+        if !istable(self.NodePositions) then
+
+            print("has not retrieved node positions yet")
+
+            self.NodePositions = ZIPPYHORDEGAME_GET_NODE_POSITIONS()
+            print("printing node positions:")
+            PrintTable(self.NodePositions)
+            if table.IsEmpty(self.NodePositions) then
+                PrintMessage(HUD_PRINTTALK, "[HORDE] Could not find nodes :(")
+                PrintMessage(HUD_PRINTTALK, "[HORDE] Try setting 'ai_norebuildgraph' to '1', or if it's '1', set it back to '0'.")
+            end
+
+        end
+
+        DownTRStartPos = self:FindNodePos( ply )
+
+    else
+
+        -- Don't use nodes
+
+        local VecMin = DistMaxCvar:GetInt()
+        local VecMax = DistMinCvar:GetInt()
+        local PlyPos = ply:WorldSpaceCenter()
+        local xMult = table.Random({-1, 1})
+        local yMult = table.Random({-1, 1})
+        DownTRStartPos = PlyPos + Vector( math.random(VecMin, VecMax)*xMult, math.random(VecMin, VecMax)*yMult, TracerStartUpAmt )
+
+        debugoverlay.Line(PlyPos, DownTRStartPos, 3)
+
+    end
 
 
-    debugoverlay.Line(PlyPos, TrStartPos, 3)
-
-    
-
-    if !util.IsInWorld(TrStartPos) then return end -- Position not in world
-
+    -- Position not in world, don't continue
+    if !util.IsInWorld(DownTRStartPos) then return end 
 
 
     -- Down trace
     local tr = util.TraceLine({
-        start=TrStartPos,
-        endpos = TrStartPos-TracerEndPosDownVec,
+        start=DownTRStartPos,
+        endpos = DownTRStartPos-TracerEndPosDownVec,
         mask = MASK_NPCWORLDSTATIC,
     })
-    if !tr.Hit then return end -- Must hit floor to spawn NPC
+
+    -- Must hit floor to spawn NPC
+    if !tr.Hit then return end
 
 
-    debugoverlay.Line(TrStartPos, TrStartPos-TracerEndPosDownVec, 3)
+    -- Debug
+    debugoverlay.Line(DownTRStartPos, DownTRStartPos-TracerEndPosDownVec, 3)
 
 
-    local ReturnPos = tr.HitPos+tr.HitNormal*15
-    if self:CheckVisibility(ReturnPos) then return end -- A player can see this position right now
+    -- Final position
+    local ReturnPos = tr.HitPos+tr.HitNormal*15 
+
+
+    -- A player can see this position right now, don't return
+    if self:CheckVisibility(ReturnPos) then return end 
 
 
     -- All checks satisfied, return the position
@@ -241,7 +252,6 @@ function Z_HORDEGAME:DecideNPC()
     local wave = self.WavesDone+1
 
     -- Decide what NPCs could spawn now --
-    --print("NPC POOL:")
     for key, npc in pairs(self.NPCsToSpawn) do
         -- WAVE START AND END STUFF --
         if npc.waveStart && wave < npc.waveStart then continue end
@@ -258,20 +268,15 @@ function Z_HORDEGAME:DecideNPC()
         if npc.maxAlive && aliveNPCs >= npc.maxAlive then continue end
         ----------------------------------------------------=#
 
-        -- if npc.maxAlive or npc.maxPerWave then
-        --     print(key, "wave spawned: ", spawnedNPCs, "current alive: ", aliveNPCs)
-        -- end
 
         npcPool[key] = npc
     end
 
-    --print("------------------------------------------------")
-    ----------------------------------------------------=#
 
     local npcData, spawnmenuClass = table.Random(npcPool)
 
     if !npcData then
-        PrintMessage(HUD_PRINTTALK, "WARNING: No NPCs to spawn!")
+        PrintMessage(HUD_PRINTTALK, "[HORDE] WARNING: No NPCs to spawn!")
     end
 
     while math.random(1, npcData.chance) != 1 do
@@ -287,8 +292,8 @@ function Z_HORDEGAME:SpawnNPC()
 
     -- Create NPC --
     local npcSpawnmenuData, spawnmenuClass, customWeapons = self:DecideNPC()
-    local wep = table.Random(customWeapons)
-    local NPC = ents.CreateSpawnMenuNPC( SpawnMenuClass, pos, wep or nil )
+    local wep = customWeapons && table.Random(customWeapons)
+    local NPC = ents.CreateSpawnMenuNPC( spawnmenuClass, pos, wep or nil )
 
     -- Vars
     NPC.IsZippyHordeNPC = true
@@ -356,10 +361,6 @@ function Z_HORDEGAME:SpawnWave_Announce()
         PrintMessage(HUD_PRINTTALK, text)
     end
 
-    -- if table.IsEmpty(self.NodePositions) && table.IsEmpty(ZHORDE_SPAWN_POINTS) then
-    --     PrintMessage(HUD_PRINTTALK, "WARNING: No nodegraph detected! Try setting \"ai_norebuildgraph\" to \"1\" and restart the map, or use spawn points!")
-    -- end
-
 end
 
 
@@ -406,7 +407,7 @@ function Z_HORDEGAME:RefillHealth()
         ply:SetArmor(ply:GetMaxArmor())
     end
 
-    PrintMessage(HUD_PRINTTALK, "Health and armor refilled!")
+    PrintMessage(HUD_PRINTTALK, "[HORDE] Health and armor refilled!")
 
 end
 
@@ -607,45 +608,25 @@ hook.Add("PlayerDeath", "ZippyHordeEnd", function()
 end)
 
 
--- hook.Add("InitPostEntity", "ZippyHorde_InitPostEntity", function()
---     Z_HORDEGAME.NodePositions = ZIPPYHORDEGAME_GET_NODE_POSITIONS()
--- end)
-
-
-local function decideTeleportNPC( NPC )
+local function retryPosition( NPC )
 
     -- Position if still on its default (0;0;0) coordinates:
-    if NPC.ZippyHorde_NotPositionedYet then
-        NPC.ZippyHorde_NotPositionedYet = !Z_HORDEGAME:TryPositionNPC(NPC)
-        return
-    end
-
-    -- if !GetConVar("zippyhorde_teleport"):GetBool() then return end
-    -- if !table.IsEmpty(ZHORDE_SPAWN_POINTS) then return end -- Don't teleport if there are spawn points
-
-    -- -- Teleport if too far away:
-    -- local allPlayersTooFarAway = true
-
-    -- for _, ply in ipairs(player.GetAll()) do
-    --     local distance = NPC:GetPos():DistToSqr(ply:GetPos())
-    --     if distance < GetConVar("zippyhorde_spawndist"):GetInt()^2 then allPlayersTooFarAway = false break end
-    -- end
-
-    -- if allPlayersTooFarAway then
-    --     Z_HORDEGAME:TryPositionNPC(NPC)
-    -- end
+    NPC.ZippyHorde_NotPositionedYet = !Z_HORDEGAME:TryPositionNPC(NPC)
 
 end
 
 
-timer.Create("ZippyHorde_Thinker", 1, 0, function()
+local nextTick = CurTime()
+hook.Add("Tick", "ZippyHorde_Thinker", function()
 
+    if nextTick > CurTime() then return end
     if !Z_HORDEGAME.Started then return end
 
     for _, NPC in ipairs(Z_HORDEGAME.NPCs) do
 
-        -- Teleport
-        decideTeleportNPC( NPC )
+        if NPC.ZippyHorde_NotPositionedYet then
+            retryPosition( NPC )
+        end
         
         -- Freeze AI if it hasn't been positioned yet
         if NPC.ZippyHorde_NotPositionedYet && NPC:IsNPC() && !NPC:IsCurrentSchedule(SCHED_NPC_FREEZE) then
@@ -653,11 +634,13 @@ timer.Create("ZippyHorde_Thinker", 1, 0, function()
             NPC:ClearGoal()
             NPC:ClearSchedule()
             NPC:StopMoving()
-            NPC:SetMoveVelocity(Vector())
+            NPC:SetMoveVelocity(vector_origin)
             NPC:SetSchedule(SCHED_NPC_FREEZE)
         end
 
     end
+
+    nextTick = CurTime()+1
 
 end)
 

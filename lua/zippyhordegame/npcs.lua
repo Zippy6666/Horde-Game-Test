@@ -7,7 +7,8 @@ if !Z_HORDEGAME.NPCsToSpawn then
     Z_HORDEGAME.NPCsToSpawn = {}
 end
 
-----------------------------------------------------------------------------------------------------=#
+
+
 local function addNPC( class, data )
 
     if table.Count(Z_HORDEGAME.NPCsToSpawn) > 100 then
@@ -25,7 +26,8 @@ local function addNPC( class, data )
     }
 
 end
-----------------------------------------------------------------------------------------------------=#
+
+
 local function refreshList()
 
     net.Start("ZippyHordeGame_RefreshNPCList")
@@ -33,7 +35,8 @@ local function refreshList()
     net.Broadcast()
 
 end
-----------------------------------------------------------------------------------------------------=#
+
+
 net.Receive("ZippyHordeGame_NewNPC", function( _, ply )
 
     if !ply:IsSuperAdmin() then return end
@@ -47,7 +50,8 @@ net.Receive("ZippyHordeGame_NewNPC", function( _, ply )
     refreshList()
 
 end)
-----------------------------------------------------------------------------------------------------=#
+
+
 net.Receive("ZippyHorde_RemoveNPC", function( _, ply )
 
     if !ply:IsSuperAdmin() then return end
@@ -61,7 +65,8 @@ net.Receive("ZippyHorde_RemoveNPC", function( _, ply )
     refreshList()
 
 end)
-----------------------------------------------------------------------------------------------------=#
+
+
 net.Receive("ZippyHorde_EditNPC", function( _, ply )
 
     if !ply:IsSuperAdmin() then return end
@@ -76,4 +81,4 @@ net.Receive("ZippyHorde_EditNPC", function( _, ply )
     refreshList()
 
 end)
-----------------------------------------------------------------------------------------------------=#
+

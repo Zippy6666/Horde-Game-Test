@@ -7,4 +7,3 @@ Made by Zippy.
 - [x] Fix nodes
 - [x] Test no nodes error
 - [ ] Hide better when not positioned yet
-- [ ] PR

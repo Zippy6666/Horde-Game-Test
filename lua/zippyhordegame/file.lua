@@ -8,7 +8,8 @@ util.AddNetworkString("ZippyHorde_NewPreset")
 local PATH = "hordegame_presets/"
 local DEFAULT_PRESET_NAME = PATH.."default.json"
 
-------------------------------------------------------------------------------=#
+
+
 local function sendPresetsToClient()
 
     local files = file.Find(PATH.."*", "DATA")
@@ -18,14 +19,16 @@ local function sendPresetsToClient()
     net.Broadcast()
 
 end
-------------------------------------------------------------------------------=#
+
+
 net.Receive("ZippyHorde_GetPresets", function( _, ply )
 
     if !ply:IsSuperAdmin() then return end
     sendPresetsToClient()
 
 end)
-------------------------------------------------------------------------------=#
+
+
 net.Receive("ZippyHorde_SelectPreset", function( _, ply )
 
     if !ply:IsSuperAdmin() then return end
@@ -46,7 +49,8 @@ net.Receive("ZippyHorde_SelectPreset", function( _, ply )
     end
 
 end)
-------------------------------------------------------------------------------=#
+
+
 function Z_HORDEGAME:PresetSave( name )
 
     if name == "default" then return end
@@ -55,7 +59,8 @@ function Z_HORDEGAME:PresetSave( name )
     sendPresetsToClient()
 
 end
-------------------------------------------------------------------------------=#
+
+
 net.Receive("ZippyHorde_NewPreset", function( _, ply )
 
     if !ply:IsSuperAdmin() then return end
@@ -69,7 +74,8 @@ net.Receive("ZippyHorde_NewPreset", function( _, ply )
     Z_HORDEGAME:PresetSave( net.ReadString() )
 
 end)
-------------------------------------------------------------------------------=#
+
+
 net.Receive("ZippyHorde_RemovePreset", function( _, ply )
 
     if !ply:IsSuperAdmin() then return end
@@ -78,7 +84,8 @@ net.Receive("ZippyHorde_RemovePreset", function( _, ply )
     sendPresetsToClient()
 
 end)
-------------------------------------------------------------------------------=#
+
+
 local function makeDefaultPreset()
 
     local fileContents = util.TableToJSON(
@@ -93,7 +100,8 @@ local function makeDefaultPreset()
     file.Write(DEFAULT_PRESET_NAME, fileContents)
 
 end
-------------------------------------------------------------------------------=#
+
+
 hook.Add("Initialize", "Initialize_ZippyHorde_FileStuff", function()
 
     if !file.Exists(PATH, "DATA") then
@@ -105,4 +113,4 @@ hook.Add("Initialize", "Initialize_ZippyHorde_FileStuff", function()
     end
 
 end)
-------------------------------------------------------------------------------=#
+

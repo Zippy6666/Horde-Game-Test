@@ -1,0 +1,2 @@
+-- game.AddParticles( "string particleFileName" )
+-- PrecacheParticleSystem("")

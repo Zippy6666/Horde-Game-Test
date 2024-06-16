@@ -12,7 +12,8 @@ if !ZHORDE_SPAWN_POINTS then
     ZHORDE_SPAWN_POINTS = {}
 end
 
--------------------------------------------------------------------------------------=#
+
+
 function ENT:Initialize()
     if SERVER then
         self:SetModel("models/props_c17/streetsign004e.mdl")
@@ -37,4 +38,4 @@ function ENT:Initialize()
     end
 
 end
--------------------------------------------------------------------------------------=#
+

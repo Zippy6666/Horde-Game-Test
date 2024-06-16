@@ -334,6 +334,7 @@ hook.Add("PopulateToolMenu", "PopulateToolMenu_HordeGameTest", function() spawnm
     panel:CheckBox("Teleport NPCs", "zippyhorde_teleport")
     panel:CheckBox("Teleport FX", "zippyhorde_teleport_fx")
     panel:CheckBox("Use Nodes", "zippyhorde_use_nodes")
+    panel:Help("Can improve spawn placement")
 
     panel:CheckBox("Seek Out Players", "zippyhorde_chase_player")
     panel:Help("Walk towards player position even though they haven't been seen yet")

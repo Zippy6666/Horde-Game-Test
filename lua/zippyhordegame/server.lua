@@ -31,19 +31,19 @@ function Z_HORDEGAME:NPC_Good_Position( npc, pos )
 end
 
 
-local DistMaxCvar = GetConVar("zippyhorde_spawndist")
 local DistMinCvar = GetConVar("zippyhorde_spawndist_min")
+local DistMaxCvar = GetConVar("zippyhorde_spawndist")
 local maxNodeIter = 10
 function Z_HORDEGAME:FindNodePos( ply )
     table.Shuffle(self.NodePositions)
 
-    local DistMin = DistMaxCvar:GetInt()^2
-    local DistMax = DistMinCvar:GetInt()^2
+    local DistMin = DistMinCvar:GetInt()^2
+    local DistMax = DistMaxCvar:GetInt()^2
     local iters = 0
     local plyPos = ply:GetPos()
     for _, v in ipairs(self.NodePositions) do
-        if v:DistToSqr(plyPos) >= DistMin && v:DistToSqr(plyPos) <= DistMax then
-            print("found node position!")
+        local dist = v:DistToSqr(plyPos)
+        if dist >= DistMin && dist <= DistMax then
             return v
         end
 
@@ -83,9 +83,14 @@ function Z_HORDEGAME:FindPlyRelPos( ply )
 
         if !istable(self.NodePositions) then
 
+            print("has not retrieved node positions yet")
+
             self.NodePositions = ZIPPYHORDEGAME_GET_NODE_POSITIONS()
+            print("printing node positions:")
+            PrintTable(self.NodePositions)
             if table.IsEmpty(self.NodePositions) then
                 PrintMessage(HUD_PRINTTALK, "[HORDE] Could not find nodes :(")
+                PrintMessage(HUD_PRINTTALK, "[HORDE] Try setting 'ai_norebuildgraph' to '1', or if it's '1', set it back to '0'.")
             end
 
         end
@@ -247,7 +252,6 @@ function Z_HORDEGAME:DecideNPC()
     local wave = self.WavesDone+1
 
     -- Decide what NPCs could spawn now --
-    --print("NPC POOL:")
     for key, npc in pairs(self.NPCsToSpawn) do
         -- WAVE START AND END STUFF --
         if npc.waveStart && wave < npc.waveStart then continue end
@@ -264,15 +268,10 @@ function Z_HORDEGAME:DecideNPC()
         if npc.maxAlive && aliveNPCs >= npc.maxAlive then continue end
         ----------------------------------------------------=#
 
-        -- if npc.maxAlive or npc.maxPerWave then
-        --     print(key, "wave spawned: ", spawnedNPCs, "current alive: ", aliveNPCs)
-        -- end
 
         npcPool[key] = npc
     end
 
-    --print("------------------------------------------------")
-    ----------------------------------------------------=#
 
     local npcData, spawnmenuClass = table.Random(npcPool)
 
@@ -361,10 +360,6 @@ function Z_HORDEGAME:SpawnWave_Announce()
     for _, text in ipairs(printStuff) do
         PrintMessage(HUD_PRINTTALK, text)
     end
-
-    -- if table.IsEmpty(self.NodePositions) && table.IsEmpty(ZHORDE_SPAWN_POINTS) then
-    --     PrintMessage(HUD_PRINTTALK, "[HORDE] WARNING: No nodegraph detected! Try setting \"ai_norebuildgraph\" to \"1\" and restart the map, or use spawn points!")
-    -- end
 
 end
 
@@ -610,11 +605,6 @@ hook.Add("PlayerDeath", "ZippyHordeEnd", function()
 
     PrintMessage(HUD_PRINTCENTER, "GAME OVER")
 
-end)
-
-
-hook.Add("InitPostEntity", "ZippyHorde_InitPostEntity", function()
-    Z_HORDEGAME.NodePositions = ZIPPYHORDEGAME_GET_NODE_POSITIONS()
 end)
 
 

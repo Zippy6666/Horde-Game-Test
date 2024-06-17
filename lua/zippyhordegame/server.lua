@@ -83,14 +83,12 @@ function Z_HORDEGAME:FindPlyRelPos( ply )
 
         if !istable(self.NodePositions) then
 
-            print("has not retrieved node positions yet")
-
             self.NodePositions = ZIPPYHORDEGAME_GET_NODE_POSITIONS()
-            print("printing node positions:")
-            PrintTable(self.NodePositions)
             if table.IsEmpty(self.NodePositions) then
                 PrintMessage(HUD_PRINTTALK, "[HORDE] Could not find nodes :(")
                 PrintMessage(HUD_PRINTTALK, "[HORDE] Try setting 'ai_norebuildgraph' to '1', or if it's '1', set it back to '0'.")
+            else
+                PrintMessage(HUD_PRINTTALK, "[HORDE] Nodes fetched!")
             end
 
         end
@@ -293,7 +291,7 @@ function Z_HORDEGAME:SpawnNPC()
     -- Create NPC --
     local npcSpawnmenuData, spawnmenuClass, customWeapons = self:DecideNPC()
     local wep = customWeapons && table.Random(customWeapons)
-    local NPC = ents.CreateSpawnMenuNPC( spawnmenuClass, pos, wep or nil )
+    local NPC = ents.CreateSpawnMenuNPC( spawnmenuClass, pos, wep.Class or nil )
 
     -- Vars
     NPC.IsZippyHordeNPC = true

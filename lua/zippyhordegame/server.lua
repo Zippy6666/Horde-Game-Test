@@ -291,7 +291,7 @@ function Z_HORDEGAME:SpawnNPC()
     -- Create NPC --
     local npcSpawnmenuData, spawnmenuClass, customWeapons = self:DecideNPC()
     local wep = customWeapons && table.Random(customWeapons)
-    local NPC = ents.CreateSpawnMenuNPC( spawnmenuClass, pos, wep.Class or nil )
+    local NPC = ents.CreateSpawnMenuNPC( spawnmenuClass, pos, (wep && wep.Class) or nil )
 
     -- Vars
     NPC.IsZippyHordeNPC = true

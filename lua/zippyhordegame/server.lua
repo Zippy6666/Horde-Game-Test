@@ -3,6 +3,8 @@ util.AddNetworkString("ZippyHordeGame_GameStartConfirmed")
 util.AddNetworkString("ZippyHordeGame_EnableButton")
 util.AddNetworkString("ZippyHordeGame_ForceEnd")
 util.AddNetworkString("ZippyHordeGame_ForceEndWave")
+util.AddNetworkString("ZippyHordeAddHalo")
+
 
 if !Z_HORDEGAME then
     Z_HORDEGAME = {}
@@ -383,6 +385,7 @@ end
 function Z_HORDEGAME:SpawnWave()
 
     self.WaveActive = true
+    self.DidHalo = false
 
     self:SpawnWave_Announce()
     
@@ -446,6 +449,7 @@ function Z_HORDEGAME:WaveOver()
 end
 
 
+local NPCsLeft_Halo = 8
 function Z_HORDEGAME:RegisterDead( ent )
 
     if !ent.IsZippyHordeNPC then return end
@@ -470,7 +474,20 @@ function Z_HORDEGAME:RegisterDead( ent )
         self.NextPrintNPCsLeft = CurTime() + 5
     end
 
-    if npcsLeft < 1 then self:WaveOver() end
+    -- Add halos when not many left
+    if !self.DidHalo && npcsLeft < NPCsLeft_Halo then
+        for _, v in ipairs(self.NPCs) do
+            net.Start("ZippyHordeAddHalo")
+            net.WriteEntity(v)
+            net.Broadcast()
+        end
+        self.DidHalo = true
+    end
+
+
+    if npcsLeft < 1 then
+        self:WaveOver()
+    end
 
 end
 

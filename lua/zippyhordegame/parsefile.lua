@@ -37,12 +37,12 @@ function HordeSilverlanParseFile(f)
 			map_version = map_ver
 		}
 		if(ainet_ver != AINET_VERSION_NUMBER) then
-			MsgN("Unknown graph file")
+			MsgN("[HORDE] Unknown graph file")
 			return
 		end
 		local numNodes = ReadInt(f)
 		if(numNodes > MAX_NODES || numNodes < 0) then
-			MsgN("Graph file has an unexpected amount of nodes")
+			MsgN("[HORDE] Graph file has an unexpected amount of nodes")
 			return
 		end
 		local nodes = {}
@@ -95,7 +95,7 @@ function HordeSilverlanParseFile(f)
 				nodedest.numlinks = nodedest.numlinks +1
 				link.dest = nodedest
 				link.destID = destID +1
-			else MsgN("Unknown link source or destination " .. srcID .. " " .. destID) end
+			else MsgN("[HORDE] Unknown link source or destination " .. srcID .. " " .. destID) end
 			local moves = {}
 			for i = 1,NUM_HULLS do
 				moves[i] = f:ReadByte()
@@ -116,7 +116,8 @@ end
 
 
 function ZIPPYHORDEGAME_GET_NODE_POSITIONS()
-	PrintMessage(HUD_PRINTTALK, "[HORDE] Getting nodes...")
+	MsgN("[HORDE] Trying to get nodegraph...")
+	PrintMessage(HUD_PRINTTALK, "[HORDE] Trying to get nodegraph...")
 	local nodegraph = HordeSilverlanParseFile("maps/graphs/" .. game.GetMap() .. ".ain")
 
 	if !nodegraph then

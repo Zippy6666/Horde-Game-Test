@@ -58,9 +58,9 @@ end
 
 
 function Z_HORDEGAME:CheckVisibility( pos )
-    
+
     for _, ply in player.Iterator() do
-        
+
         if ply:PosInView(pos) then
             return true
         end
@@ -74,7 +74,7 @@ end
 
 
 
-local TracerStartUpAmt = 150 
+local TracerStartUpAmt = 150
 local TracerEndPosDownVec = Vector(0, 0, 500)
 local UseNodesCvar = GetConVar("zippyhorde_use_nodes")
 function Z_HORDEGAME:FindPlyRelPos( ply )
@@ -114,7 +114,7 @@ function Z_HORDEGAME:FindPlyRelPos( ply )
 
 
     -- Position not in world, don't continue
-    if !util.IsInWorld(DownTRStartPos) then return end 
+    if !util.IsInWorld(DownTRStartPos) then return end
 
 
     -- Down trace
@@ -133,11 +133,11 @@ function Z_HORDEGAME:FindPlyRelPos( ply )
 
 
     -- Final position
-    local ReturnPos = tr.HitPos+tr.HitNormal*15 
+    local ReturnPos = tr.HitPos+tr.HitNormal*15
 
 
     -- A player can see this position right now, don't return
-    if self:CheckVisibility(ReturnPos) then return end 
+    if self:CheckVisibility(ReturnPos) then return end
 
 
     -- All checks satisfied, return the position
@@ -149,7 +149,7 @@ end
 function Z_HORDEGAME:TryPositionNPC( npc, noTeleportFromEffect )
 
 
-    local ply = table.Random(player.GetAll())
+    local ply = player.GetAll()[math.random(1, player.GetCount())]
     local useSpawnPoints = !table.IsEmpty(ZHORDE_SPAWN_POINTS)
     local function effect( pos )
         if GetConVar("zippyhorde_teleport_fx"):GetBool() then
@@ -209,7 +209,7 @@ function Z_HORDEGAME:TryPositionNPC( npc, noTeleportFromEffect )
                 -- npc:SetNoDraw(false)
                 npc:ClearSchedule()
                 return true
-            
+
             end
         end
 
@@ -219,12 +219,10 @@ end
 
 
 function Z_HORDEGAME:TooCloseToPlayer( pos )
-
-    for _, ply in ipairs(player.GetAll()) do
+    for _, ply in player.Iterator() do
         local dist = GetConVar("zippyhorde_spawndist_min"):GetInt()
         if pos:DistToSqr(ply:GetPos()) < dist^2 then return true end
     end
-
 end
 
 
@@ -328,7 +326,7 @@ function Z_HORDEGAME:SpawnNPC()
 
 
     -- Position it, or let us know if it failed
-    NPC.ZippyHorde_NotPositionedYet = !self:TryPositionNPC(NPC, true) 
+    NPC.ZippyHorde_NotPositionedYet = !self:TryPositionNPC(NPC, true)
 
 
     -- AUTO TELEPORT SYSTEM (FROM PROXSPAWN)
@@ -371,7 +369,7 @@ function Z_HORDEGAME:StartExtraSpawnTimer( count )
     timer.Create("ZippyHordeSpawnRestTimer", 1, 0, function()
 
         if table.Count(Z_HORDEGAME.NPCs) >= GetConVar("zippyhorde_max_spawned"):GetInt() then return end
-    
+
         self:SpawnNPC()
         extraNPCsSpawned = extraNPCsSpawned+1
 
@@ -388,7 +386,7 @@ function Z_HORDEGAME:SpawnWave()
     self.DidHalo = false
 
     self:SpawnWave_Announce()
-    
+
     local startNPCCount = math.Clamp(self.WaveNPCCount, 0, GetConVar("zippyhorde_max_spawned"):GetInt())
     local extraNPCCount = self.WaveNPCCount - startNPCCount
 
@@ -403,7 +401,7 @@ function Z_HORDEGAME:RefillHealth()
 
     if !GetConVar("zippyhorde_refill_health"):GetBool() then return end
 
-    for _, ply in ipairs(player.GetAll()) do
+    for _, ply in player.Iterator() do
         ply:SetHealth(ply:GetMaxHealth())
         ply:SetArmor(ply:GetMaxArmor())
     end
@@ -460,7 +458,7 @@ function Z_HORDEGAME:RegisterDead( ent )
 
     self.WaveNPCsKilled = self.WaveNPCsKilled+1
     local npcsLeft = self.WaveNPCCount-self.WaveNPCsKilled
-    
+
     if self.NextPrintNPCsLeft < CurTime() then
         timer.Simple(1, function()
             if !self.WaveActive then return end
@@ -470,7 +468,7 @@ function Z_HORDEGAME:RegisterDead( ent )
 
             PrintMessage(HUD_PRINTTALK, npcsLeft.." NPCs left!")
         end)
-    
+
         self.NextPrintNPCsLeft = CurTime() + 5
     end
 
@@ -494,7 +492,7 @@ end
 
 function Z_HORDEGAME:RemoveAllLiveNPCs()
 
-    for _, ent in ipairs(ents.GetAll()) do
+    for _ ent in ents.Iterator() do
         if !ent.IsZippyHordeNPC then continue end
 
         ent.ZippyHorde_Dead = true -- Prevent register
@@ -642,7 +640,7 @@ hook.Add("Tick", "ZippyHorde_Thinker", function()
         if NPC.ZippyHorde_NotPositionedYet then
             retryPosition( NPC )
         end
-        
+
         -- Freeze AI if it hasn't been positioned yet
         if NPC.ZippyHorde_NotPositionedYet && NPC:IsNPC() && !NPC:IsCurrentSchedule(SCHED_NPC_FREEZE) then
             NPC:TaskComplete()

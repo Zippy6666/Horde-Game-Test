@@ -15,7 +15,7 @@ function ENT:Z_HordeGame_SeekOutPotentialEnemy()
     if self:IsCurrentSchedule(SCHED_TARGET_CHASE) then return end
     if self.IsVJBaseSNPC && self:IsBusy() then return end
 
-    local potientialEnemy = self:Z_HordeGame_LastTargetShouldBeSeeked() && self.Z_HordeGame_LastSeekOutTarget or table.Random(player.GetAll())
+    local potientialEnemy = self:Z_HordeGame_LastTargetShouldBeSeeked() && self.Z_HordeGame_LastSeekOutTarget or player.GetAll()[math.random(1, player.GetCount())]
     if potientialEnemy then
         self:SetTarget(potientialEnemy)
 

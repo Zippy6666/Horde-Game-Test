@@ -492,7 +492,7 @@ end
 
 function Z_HORDEGAME:RemoveAllLiveNPCs()
 
-    for _ ent in ents.Iterator() do
+    for _, ent in ents.Iterator() do
         if !ent.IsZippyHordeNPC then continue end
 
         ent.ZippyHorde_Dead = true -- Prevent register

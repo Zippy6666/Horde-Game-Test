@@ -14,9 +14,12 @@ net.Receive("ZippyHordeAddHalo", function()
 
 end)
 
-local blurstrenght = 8
+local blurstrenght = 1
 local color_green = Color( 0, 255, 0 )
 hook.Add("PreDrawHalos", "ZippyHorde", function()
+    if !Z_HORDE_HALO_ENABLE:GetBool() then return end
+
+
     local ply = LocalPlayer()
 
     if IsValid(ply) && !table.IsEmpty(Z_HORDE_HALO_ENTS) then

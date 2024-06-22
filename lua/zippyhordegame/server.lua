@@ -285,7 +285,7 @@ function Z_HORDEGAME:DecideNPC()
 
 end
 
-
+local telecvar = GetConVar("zippyhorde_teleport")
 function Z_HORDEGAME:SpawnNPC()
 
     -- Create NPC --
@@ -331,14 +331,15 @@ function Z_HORDEGAME:SpawnNPC()
 
     -- AUTO TELEPORT SYSTEM (FROM PROXSPAWN)
     -- Try moving to another location if it has been out of view for some time
-    NPC:ConvTimer( "ProxyMove", math.Rand(15, 25), function()
-        if GetConVar("zippyhorde_teleport"):GetBool() && !self:CheckVisibility( NPC:GetPos() ) then
-            local success = self:TryPositionNPC( NPC )
+    NPC:ConvTimer( "ProxyMove", math.Rand(30, 40), function()
 
+        if telecvar:GetBool() && !self:CheckVisibility( NPC:GetPos() ) then
+            local success = self:TryPositionNPC( NPC )
             if success && NPC:IsNPC() && NPC:IsGoalActive() then -- Clear goal after teleportation so we don't just run off
                 NPC:ClearGoal()
             end
         end
+
     end, 0 )
 end
 
@@ -596,7 +597,7 @@ end)
 
 
 hook.Add("PlayerNoClip", "ZippyHordeNoNoclip", function( ply, desiredState )
-    if Z_HORDEGAME.Started && GetConVar("zippyhorde_no_noclip"):GetBool() then
+    if Z_HORDEGAME.Started && GetConVar("zippyhorde_no_noclip"):GetBool() && desiredState==true then
         return false
     end
 end)

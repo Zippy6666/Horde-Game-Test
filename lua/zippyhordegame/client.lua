@@ -298,7 +298,7 @@ hook.Add("PopulateToolMenu", "PopulateToolMenu_HordeGameTest", function() spawnm
 
     HORDE_PANEL.npcAmount = panel:NumSlider("Start", nil, 1, 20, 0)
     HORDE_PANEL.npcAmount:SetValue(15)
-    HORDE_PANEL.increasePerWave = panel:NumSlider("Increase Per Wave", nil, 1, 20, 0)
+    HORDE_PANEL.increasePerWave = panel:NumSlider("Increase Per Wave", nil, 0, 20, 0)
     HORDE_PANEL.increasePerWave:SetValue(5)
     ------------------------------------------------------=#
 
@@ -326,27 +326,29 @@ hook.Add("PopulateToolMenu", "PopulateToolMenu_HordeGameTest", function() spawnm
     ------------------------------------------------------=#
 
     -- Settings --
-    panel:Help("\nSettings:")
+    panel:Help("\nSpawning:")
+    panel:NumSlider("Max NPCs", "zippyhorde_max_spawned", 1, 200, 0)
+    panel:NumSlider("Max Distance", "zippyhorde_spawndist", 250, 8000, 0)
+    panel:NumSlider("Min Distance", "zippyhorde_spawndist_min", 250, 8000, 0)
+    panel:CheckBox("Teleport", "zippyhorde_teleport")
+    panel:ControlHelp("Teleport NPCs that have been outside the players' view for some time.")
+    panel:CheckBox("Use Nodes", "zippyhorde_use_nodes")
+    panel:ControlHelp("Use the nodegraph to improve spawn placement if available.")
 
+    panel:Help("\nRules:")
     panel:CheckBox("Refill Health", "zippyhorde_refill_health")
     panel:CheckBox("End On Death", "zippyhorde_end_on_death")
     panel:CheckBox("No Noclip", "zippyhorde_no_noclip")
-    panel:CheckBox("Teleport NPCs", "zippyhorde_teleport")
-    panel:CheckBox("Teleport FX", "zippyhorde_teleport_fx")
-    panel:CheckBox("Use Nodes", "zippyhorde_use_nodes")
-    panel:Help("Can improve spawn placement")
-
+    panel:NumSlider("Wave Rest Time", "zippyhorde_start_time", 1, 60, 0)
     panel:CheckBox("Seek Out Players", "zippyhorde_chase_player")
-    panel:Help("Walk towards player position even though they haven't been seen yet")
+    panel:ControlHelp("Walk towards player position even though they haven't been seen yet.")
     panel:CheckBox("Run Seek Out", "zippyhorde_run_chase")
-    panel:Help("Run when seeking out player")
+    panel:ControlHelp("Run when seeking out player.")
 
-    panel:NumSlider("Max NPCs", "zippyhorde_max_spawned", 1, 200, 0)
-    panel:NumSlider("Time Until Wave Start", "zippyhorde_start_time", 1, 60, 0)
-
-    panel:NumSlider("Max Spawn Distance", "zippyhorde_spawndist", 250, 8000, 0)
-    panel:NumSlider("Min Spawn Distance", "zippyhorde_spawndist_min", 250, 8000, 0)
-    
+    panel:Help("\nVisuals:")
+    panel:CheckBox("Teleport FX (SERVER)", "zippyhorde_teleport_fx")
+    panel:CheckBox("Show Halos (CLIENT)", "zippyhorde_halo_enable")
+    -- panel:CheckBox("Halo Blur Amount (CLIENT)", "zippyhorde_halo_blur")
     ------------------------------------------------------=#
 
 end) end)

@@ -58,18 +58,13 @@ end
 
 
 function Z_HORDEGAME:CheckVisibility( pos )
-
     for _, ply in player.Iterator() do
-
         if ply:PosInView(pos) then
             return true
         end
-
     end
 
-
     return false
-
 end
 
 
@@ -77,6 +72,7 @@ end
 local TracerStartUpAmt = 150
 local TracerEndPosDownVec = Vector(0, 0, 500)
 local UseNodesCvar = GetConVar("zippyhorde_use_nodes")
+local zippyhorde_vischeck = GetConVar("zippyhorde_vischeck")
 function Z_HORDEGAME:FindPlyRelPos( ply )
     local DownTRStartPos
     if UseNodesCvar:GetBool() && !(istable(self.NodePositions) && table.IsEmpty(self.NodePositions)) then
@@ -137,7 +133,7 @@ function Z_HORDEGAME:FindPlyRelPos( ply )
 
 
     -- A player can see this position right now, don't return
-    if self:CheckVisibility(ReturnPos) then return end
+    if zippyhorde_vischeck:GetBool() && self:CheckVisibility(ReturnPos) then return end
 
 
     -- All checks satisfied, return the position

@@ -306,9 +306,9 @@ hook.Add("PopulateToolMenu", "PopulateToolMenu_HordeGameTest", function() spawnm
     panel:Help("\nNPC Strenght:")
 
     HORDE_PANEL.strength = panel:NumSlider("Start Percentage", nil, 0, 2, 2)
-    HORDE_PANEL.strength:SetValue(1)
+    HORDE_PANEL.strength:SetValue(0.75)
     HORDE_PANEL.strengthIncrease = panel:NumSlider("Percent Added Per Wave", nil, 0, 2, 2)
-    HORDE_PANEL.strengthIncrease:SetValue(0)
+    HORDE_PANEL.strengthIncrease:SetValue(0.05)
     ------------------------------------------------------=#
 
     -- CONTROLS --
@@ -332,6 +332,8 @@ hook.Add("PopulateToolMenu", "PopulateToolMenu_HordeGameTest", function() spawnm
     panel:NumSlider("Min Distance", "zippyhorde_spawndist_min", 250, 8000, 0)
     panel:CheckBox("Teleport", "zippyhorde_teleport")
     panel:ControlHelp("Teleport NPCs that have been outside the players' view for some time.")
+    panel:CheckBox("VisCheck", "zippyhorde_vischeck")
+    panel:ControlHelp("Spawn NPCs out of players sight.")
     panel:CheckBox("Use Nodes", "zippyhorde_use_nodes")
     panel:ControlHelp("Use the nodegraph to improve spawn placement if available.")
 

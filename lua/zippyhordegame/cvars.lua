@@ -12,6 +12,7 @@ CreateConVar("zippyhorde_run_chase", "0", bit.bor(FCVAR_ARCHIVE, FCVAR_REPLICATE
 CreateConVar("zippyhorde_no_noclip", "0", bit.bor(FCVAR_ARCHIVE, FCVAR_REPLICATED))
 CreateConVar("zippyhorde_end_on_death", "1", bit.bor(FCVAR_ARCHIVE, FCVAR_REPLICATED))
 CreateConVar("zippyhorde_use_nodes", "1", bit.bor(FCVAR_ARCHIVE, FCVAR_REPLICATED))
+CreateConVar("zippyhorde_vischeck", "0", bit.bor(FCVAR_ARCHIVE, FCVAR_REPLICATED))
 
 if CLIENT then
     Z_HORDE_HALO_ENABLE = CreateConVar("zippyhorde_halo_enable", "1", bit.bor(FCVAR_ARCHIVE, FCVAR_REPLICATED))

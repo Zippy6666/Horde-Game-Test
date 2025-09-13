@@ -143,10 +143,12 @@ local function NPC_List_AddLine( npcClass, npcData )
     local chance = "1/"..npcData.chance
     local start = npcData.waveStart or 1
     local _end = npcData.waveEnd or "Never"
-    local maxPerWave = npcData.maxPerWave or "No Limit"
-    local maxAlive = npcData.maxAlive or "No Limit"
+    local maxPerWave = npcData.maxPerWave
+    local maxAlive = npcData.maxAlive
+    local maxDisplayed = (maxPerWave && maxAlive && math.min(maxAlive, maxPerWave))
+    || maxPerWave || maxAlive || "inf"
 
-    local line = HORDE_MENU.NPC_List:AddLine(name, chance, start, _end, maxPerWave, maxAlive)
+    local line = HORDE_MENU.NPC_List:AddLine(name, npcClass, chance, maxDisplayed)
 
     line.OnRightClick = function()
 
@@ -277,11 +279,9 @@ hook.Add("PopulateToolMenu", "PopulateToolMenu_HordeGameTest", function() spawnm
     HORDE_MENU.NPC_List:Dock(TOP)
     HORDE_MENU.NPC_List:DockMargin(10, 10, 10, 10)
     HORDE_MENU.NPC_List:AddColumn("NPC")
-    HORDE_MENU.NPC_List:AddColumn("Chance")
-    HORDE_MENU.NPC_List:AddColumn("Start")
-    HORDE_MENU.NPC_List:AddColumn("End")
-    HORDE_MENU.NPC_List:AddColumn("Max per Wave")
-    HORDE_MENU.NPC_List:AddColumn("Max Alive")
+    HORDE_MENU.NPC_List:AddColumn("CLS")
+    HORDE_MENU.NPC_List:AddColumn("1/X")
+    HORDE_MENU.NPC_List:AddColumn("MAX")
 
     local buttonAddNPC = panel:Button("New NPC")
     buttonAddNPC.DoClick = addNPCButton

@@ -1,17 +1,14 @@
 local AINET_VERSION_NUMBER = 37
 local NUM_HULLS = 10
-local MAX_NODES = 4096
+local MAX_NODES = 8192
 
 local SIZEOF_INT = 4
 local SIZEOF_SHORT = 2
-
-
 
 local function toUShort(b)
 	local i = {string.byte(b,1,SIZEOF_SHORT)}
 	return i[1] +i[2] *256
 end
-
 
 local function toInt(b)
 	local i = {string.byte(b,1,SIZEOF_INT)}
@@ -20,12 +17,9 @@ local function toInt(b)
 	return i
 end
 
-
 local function ReadInt(f) return toInt(f:Read(SIZEOF_INT)) end
 
-
 local function ReadUShort(f) return toUShort(f:Read(SIZEOF_SHORT)) end
-
 
 function HordeSilverlanParseFile(f)
 	f = file.Open(f,"rb","GAME")
@@ -114,7 +108,6 @@ function HordeSilverlanParseFile(f)
 	return nodegraph
 end
 
-
 function ZIPPYHORDEGAME_GET_NODE_POSITIONS()
 	MsgN("[HORDE] Trying to get nodegraph...")
 	PrintMessage(HUD_PRINTTALK, "[HORDE] Trying to get nodegraph...")
@@ -146,4 +139,3 @@ function ZIPPYHORDEGAME_GET_NODE_POSITIONS()
 
 	return node_positions
 end
-

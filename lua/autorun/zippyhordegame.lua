@@ -1,50 +1,39 @@
-if CLIENT then
-    function MissingConvMsg()
-        local frame = vgui.Create("DFrame")
-        frame:SetSize(300, 125)
-        frame:SetTitle("Missing Library!")
-        frame:Center()
-        frame:MakePopup()
+--[[=========================== CONV MESSAGE START ===========================]]--
+MissingConvMsg2 = CLIENT && function()
 
-        local text = vgui.Create("DLabel", frame)
-        text:SetText("This server does not have the CONV library installed, some addons may function incorrectly. Click the link below to get it:")
-        text:Dock(TOP)
-        text:SetWrap(true)  -- Enable text wrapping for long messages
-        text:SetAutoStretchVertical(true)  -- Allow the text label to stretch vertically
-        text:SetFont("BudgetLabel")
+    Derma_Query(
+        "This server does not have Zippy's Library installed, addons will function incorrectly!",
 
-        local label = vgui.Create("DLabelURL", frame)
-        label:SetText("CONV Library")
-        label:SetURL("https://steamcommunity.com/sharedfiles/filedetails/?id=3146473253")
-        label:Dock(BOTTOM)
-        label:SetContentAlignment(5)  -- 5 corresponds to center alignment
-    end
-elseif SERVER && !file.Exists("convenience/adam.lua", "LUA") then
-    -- Conv lib not on on server, send message to clients
-    hook.Add("PlayerInitialSpawn", "convenienceerrormsg", function( ply )
-        local sendstr = 'MissingConvMsg()'
-        ply:SendLua(sendstr)
-    end)
-end
+        "ZIPPY'S LIBRARY MISSING!",
+        
+        "Get Zippy's Library",
 
+        function()
+            gui.OpenURL("https://steamcommunity.com/sharedfiles/filedetails/?id=3146473253")
+        end,
 
---[[
-=======================================================================================================================
-                                            HORDE
-=======================================================================================================================
---]]
+        "Close"
+    )
 
+end or nil
 
+hook.Add("PlayerInitialSpawn", "MissingConvMsg2", function( ply )
+
+    if file.Exists("autorun/conv.lua", "LUA") then return end
+
+    local sendstr = 'MissingConvMsg2()'
+    ply:SendLua(sendstr)
+
+end)
+--[[============================ CONV MESSAGE END ============================]]--
 
 local path = "zippyhordegame/"
 
 AddCSLuaFile(path.."cvars.lua")
 AddCSLuaFile(path.."client.lua")
-AddCSLuaFile(path.."particles.lua")
 AddCSLuaFile(path.."halo.lua")
 
 include(path.."cvars.lua")
-include(path.."particles.lua")
 
 if SERVER then
     include(path.."parsefile.lua")

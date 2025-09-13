@@ -12,8 +12,6 @@ if !ZHORDE_SPAWN_POINTS then
     ZHORDE_SPAWN_POINTS = {}
 end
 
-
-
 function ENT:Initialize()
     if SERVER then
         self:SetModel("models/props_c17/streetsign004e.mdl")
@@ -34,8 +32,6 @@ function ENT:Initialize()
         self:CallOnRemove("ZHORDE_SPAWN_POINTS_REMOVE", function() 
             table.RemoveByValue(ZHORDE_SPAWN_POINTS, self)
         end)
-
     end
-
 end
 

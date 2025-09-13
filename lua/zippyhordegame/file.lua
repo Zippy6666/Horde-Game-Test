@@ -8,26 +8,18 @@ util.AddNetworkString("ZippyHorde_NewPreset")
 local PATH = "hordegame_presets/"
 local DEFAULT_PRESET_NAME = PATH.."default.json"
 
-
-
 local function sendPresetsToClient()
-
     local files = file.Find(PATH.."*", "DATA")
 
     net.Start("ZippyHorde_SendPresetsToClient")
     net.WriteTable(files)
     net.Broadcast()
-
 end
 
-
 net.Receive("ZippyHorde_GetPresets", function( _, ply )
-
     if !ply:IsSuperAdmin() then return end
     sendPresetsToClient()
-
 end)
-
 
 net.Receive("ZippyHorde_SelectPreset", function( _, ply )
 
